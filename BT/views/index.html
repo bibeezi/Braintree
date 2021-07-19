@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="../css/style.css"/>
+    </head>
+
+    <body>
+        <div id="dropin-container"></div>
+        <input type="hidden" id="nonce" name="payment_method_nonce"/>
+        <button id="submit-button" class="button button--small button--green">Purchase</button>
+        <p id="display_res"></p>
+
+        <script src="https://js.braintreegateway.com/web/dropin/1.31.0/js/dropin.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script> 
+
+        <script type="text/javascript">
+            var client_token;
+            var button = document.querySelector('#submit-button');
+            
+
+            $.ajax({
+                type: 'GET',
+                url: '/client_token',
+            }).done(function(res) {
+
+                client_token = res;
+                console.log(client_token);
+
+                braintree.dropin.create({
+                    authorization: client_token,
+                    container: document.getElementById('dropin-container'),
+                    paypal: {
+                        flow: 'checkout',
+                        amount: '10.00',
+                        currency: 'USD'
+                    }
+                }, function(error, dropinInstance) {
+                    if(error) {
+                        console.error(error);
+                    }
+
+                    button.addEventListener('click', function() {
+                        
+                        dropinInstance.requestPaymentMethod(function(err, payload) {
+                            if(error) {
+                                console.error(error);
+                            }
+
+                            console.log(payload);
+                            console.log(payload.nonce);
+
+                            $.ajax({
+                                type:'POST',
+                                url:'/checkout',
+                                data: {'payment_method_nonce' : payload.nonce}//, 'device_data': payload.device_data}
+                            }).done(function(result) {
+                                dropinInstance.teardown(function (err) {
+                                    if(err) {
+                                        console.error(err);
+                                    }
+
+                                });
+
+                                $('#display_res').text(JSON.stringify(result));
+                                $('#submit-button').hide();
+
+                                console.log(result);
+                                console.log("wow");
+                            });
+                        });
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>
