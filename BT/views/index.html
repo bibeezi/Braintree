@@ -17,6 +17,36 @@
         <script type="text/javascript">
             var client_token;
             var button = document.querySelector('#submit-button');
+
+            var threeDSecureParameters = {
+                amount: '10.00',
+                email: 'test@example.com',
+                billingAddress: {
+                    givenName: 'Jill', // ASCII-printable characters required, else will throw a validation error
+                    surname: 'Doe', // ASCII-printable characters required, else will throw a validation error
+                    phoneNumber: '8101234567',
+                    streetAddress: '555 Smith St.',
+                    extendedAddress: '#5',
+                    locality: 'Oakland',
+                    region: 'CA',
+                    postalCode: '12345',
+                    countryCodeAlpha2: 'US'
+                },
+                additionalInformation: {
+                    workPhoneNumber: '8101234567',
+                    shippingGivenName: 'Jill',
+                    shippingSurname: 'Doe',
+                    shippingPhone: '8101234567',
+                    shippingAddress: {
+                    streetAddress: '555 Smith St.',
+                    extendedAddress: '#5',
+                    locality: 'Oakland',
+                    region: 'CA',
+                    postalCode: '12345',
+                    countryCodeAlpha2: 'US'
+                    }
+                },
+            };
             
 
             $.ajax({
@@ -34,15 +64,20 @@
                         flow: 'checkout',
                         amount: '10.00',
                         currency: 'USD'
-                    }
+                    },
+                    threeDSecure: true
                 }, function(error, dropinInstance) {
                     if(error) {
                         console.error(error);
+                        return;
                     }
 
-                    button.addEventListener('click', function() {
-                        
-                        dropinInstance.requestPaymentMethod(function(err, payload) {
+                    button.addEventListener('click', function(event) {
+                        event.preventDefault();
+
+                        dropinInstance.requestPaymentMethod({
+                            threeDSecure: threeDSecureParameters
+                        }, function(err, payload) {
                             if(error) {
                                 console.error(error);
                             }
@@ -53,7 +88,7 @@
                             $.ajax({
                                 type:'POST',
                                 url:'/checkout',
-                                data: {'payment_method_nonce' : payload.nonce}//, 'device_data': payload.device_data}
+                                data: {'payment_method_nonce' : payload.nonce, 'device_data': payload.device_data}
                             }).done(function(result) {
                                 dropinInstance.teardown(function (err) {
                                     if(err) {

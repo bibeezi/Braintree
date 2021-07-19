@@ -34,13 +34,12 @@ app.get("/client_token", (req, res) => {
 app.post("/checkout", (req, res) => {
 
     var nonceFromTheClient = req.body.payment_method_nonce;
-    console.log(req.body.payment_method_nonce);
-    console.log(nonceFromTheClient);
+    var deviceDataFromTheClient = req.body.device_data;
     
     gateway.transaction.sale({
         amount: "10.00",
         paymentMethodNonce: nonceFromTheClient,
-        // deviceData: deviceDataFromTheClient,
+        deviceData: deviceDataFromTheClient,
         options: {
             submitForSettlement: true
         }
