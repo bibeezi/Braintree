@@ -65,7 +65,8 @@
                         amount: '10.00',
                         currency: 'USD'
                     },
-                    threeDSecure: true
+                    threeDSecure: true,
+                    dataCollector: true
                 }, function(error, dropinInstance) {
                     if(error) {
                         console.error(error);
@@ -84,11 +85,12 @@
 
                             console.log(payload);
                             console.log(payload.nonce);
+                            console.log(payload.deviceData);
 
                             $.ajax({
                                 type:'POST',
                                 url:'/checkout',
-                                data: {'payment_method_nonce' : payload.nonce, 'device_data': payload.device_data}
+                                data: {'payment_method_nonce' : payload.nonce, 'device_data': payload.deviceData}
                             }).done(function(result) {
                                 dropinInstance.teardown(function (err) {
                                     if(err) {
@@ -101,7 +103,7 @@
                                 $('#submit-button').hide();
 
                                 console.log(result);
-                                console.log("wow");
+                                console.log("wow!");
                             });
                         });
                     });
